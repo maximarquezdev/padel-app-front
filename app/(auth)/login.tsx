@@ -1,31 +1,29 @@
 import { LabeledTextField } from "@/components/form/LabeledTextField";
 import ThemedButton from "@/components/themed-button";
 import { ThemedText } from "@/components/themed-text";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/src/auth/auth.context";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signInWithCredentials } = useAuth();
   const [authData, setAuthData] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const onChange = (key: keyof typeof authData, value: string) => {
     setAuthData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const onSubmit = async () => {
+  async function onSubmit() {
+    setErr(null);
     try {
-      setLoading(true);
-      await signIn(authData.email, authData.password);
-      router.replace("/(app)/home");
+      await signInWithCredentials(authData);
     } catch (e: any) {
-      Alert.alert("Error", e?.message || "No se pudo iniciar sesión");
-    } finally {
-      setLoading(false);
+      setErr(e.message ?? "Error al iniciar sesión");
     }
-  };
+  }
+
   return (
     <>
       <View style={styles.container}>

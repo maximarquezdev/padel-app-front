@@ -1,19 +1,23 @@
-import { Stack } from "expo-router";
-import "react-native-reanimated";
+// app/_layout.tsx
+import { AuthProvider, useAuth } from "@/src/auth/auth.context";
+import { Redirect, Slot } from "expo-router";
 
-import { AuthProvider } from "@/context/AuthContext";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+function Root() {
+  const { loading, accessToken } = useAuth();
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+  // if (loading) return <Text>Loading...</Text>;
+  // <SplashScreen />;
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const isAuthed = !!accessToken;
+  // Si estás en un segmento protegido y no hay sesión, redirige a login
+  // (también podés separar segmentos (auth)/(app) y usar layouts independientes)
+  return isAuthed ? <Slot /> : <Redirect href="/(auth)/login" />;
+}
 
+export default function Layout() {
   return (
     <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Root />
     </AuthProvider>
   );
 }

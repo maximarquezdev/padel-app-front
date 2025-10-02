@@ -1,7 +1,7 @@
 // app/(app)/home.tsx
+import { useAuth } from "@/src/auth/auth.context";
 import { router } from "expo-router";
 import { Button, StyleSheet, Text, View } from "react-native";
-import { useAuth } from "../../context/AuthContext";
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
