@@ -174,19 +174,19 @@ const styles = StyleSheet.create({
   container: { width: "100%" },
   label: {
     fontSize: 14,
-    color: "#e5e5e5ff",
+    color: "rgba(44, 44, 44, 1)",
     marginBottom: 6,
     fontWeight: "600",
   },
   inputWrapper: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: "rgba(225, 225, 225, 1)",
+    borderColor: "#e1e1e1ff",
     borderRadius: 8,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(245, 245, 245, 1)",
+    backgroundColor: "#f0f0f0ff",
   },
   inputWrapperDisabled: {
     backgroundColor: "rgba(245, 245, 245, 1)",
@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1C1C1E",
     paddingVertical: 10,
+    backgroundColor: "transparent",
   },
   addonLeft: {
     marginRight: 8,
