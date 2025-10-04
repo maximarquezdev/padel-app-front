@@ -1,23 +1,42 @@
-// app/_layout.tsx
-import { AuthProvider, useAuth } from "@/src/auth/auth.context";
-import { Redirect, Slot } from "expo-router";
+import { AuthProvider, useAuth } from "@/providers/auth";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-function Root() {
-  const { loading, accessToken } = useAuth();
+SplashScreen.preventAutoHideAsync();
 
-  // if (loading) return <Text>Loading...</Text>;
-  // <SplashScreen />;
+function RootNavigator() {
+  const { session, isRestoring } = useAuth();
 
-  const isAuthed = !!accessToken;
-  // Si estás en un segmento protegido y no hay sesión, redirige a login
-  // (también podés separar segmentos (auth)/(app) y usar layouts independientes)
-  return isAuthed ? <Slot /> : <Redirect href="/(auth)/login" />;
+  useEffect(() => {
+    if (!isRestoring) {
+      SplashScreen.hideAsync();
+    }
+  }, [isRestoring]);
+
+  if (isRestoring) {
+    return null;
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!session.user}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session.user}>
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
+  );
 }
 
-export default function Layout() {
+export default function RootLayout() {
   return (
-    <AuthProvider>
-      <Root />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

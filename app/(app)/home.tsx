@@ -1,20 +1,14 @@
-// app/(app)/home.tsx
-import { useAuth } from "@/src/auth/auth.context";
-import { router } from "expo-router";
+import { useAuth } from "@/providers/auth";
 import { Button, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
-  const { signOut } = useAuth();
-
-  const onLogout = async () => {
-    await signOut();
-    router.replace("/(auth)/login");
-  };
+  const { session, signOut } = useAuth();
+  console.log(session?.user?.email);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Área privada</Text>
-      <Button title="Cerrar sesión" onPress={onLogout} />
+      <Text style={styles.title}>Bienvenido {session?.user?.email}</Text>
+      <Button title="Cerrar Sesión" onPress={() => signOut()} />
     </View>
   );
 }

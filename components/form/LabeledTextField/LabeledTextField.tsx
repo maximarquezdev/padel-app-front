@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   inputWrapper: {
-    minHeight: 48,
+    height: 48,
     borderWidth: 1,
     borderColor: "#e1e1e1ff",
     borderRadius: 8,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "400",
     color: "#1C1C1E",
     paddingVertical: 10,
     backgroundColor: "transparent",
