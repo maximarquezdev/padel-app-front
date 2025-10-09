@@ -3,7 +3,6 @@ import { Button, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
   const { session, signOut } = useAuth();
-  console.log(session?.user?.email);
 
   return (
     <View style={styles.container}>

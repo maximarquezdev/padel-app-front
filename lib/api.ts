@@ -2,19 +2,22 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-let auth = { accessToken: "", refreshToken: "" };
+let auth = { access_token: "", refresh_token: "" };
 export const setAuthTokens = (t: {
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }) => (auth = t);
 export const clearAuthTokens = () =>
-  (auth = { accessToken: "", refreshToken: "" });
+  (auth = { access_token: "", refresh_token: "" });
 
-export const api = axios.create({ baseURL: "http://192.168.1.2:3000/api" });
+export const api = axios.create({ baseURL: "http://192.168.1.2:3000" });
+// export const api = axios.create({
+//   baseURL: "https://paddle-app-back.onrender.com",
+// });
 
 api.interceptors.request.use((cfg) => {
-  if (auth.accessToken)
-    cfg.headers.Authorization = `Bearer ${auth.accessToken}`;
+  if (auth.access_token)
+    cfg.headers.Authorization = `Bearer ${auth.access_token}`;
   return cfg;
 });
 
@@ -29,17 +32,14 @@ api.interceptors.response.use(
       refreshing ||= (async () => {
         const rt = await SecureStore.getItemAsync("refresh_token");
         if (!rt) return null;
-        const res = await axios.post(
-          "http://192.168.1.2:3000/api/auth/refresh",
-          {
-            refreshToken: rt,
-          }
-        );
-        const { accessToken, refreshToken } = res.data;
-        await SecureStore.setItemAsync("access_token", accessToken);
-        await SecureStore.setItemAsync("refresh_token", refreshToken);
-        setAuthTokens({ accessToken, refreshToken });
-        return accessToken;
+        const res = await axios.post("http://192.168.1.2:3000/auth/refresh", {
+          refreshToken: rt,
+        });
+        const { access_token, refresh_token } = res.data;
+        await SecureStore.setItemAsync("access_token", access_token);
+        await SecureStore.setItemAsync("refresh_token", refresh_token);
+        setAuthTokens({ access_token, refresh_token });
+        return access_token;
       })();
       const newAT = await refreshing;
       refreshing = null;

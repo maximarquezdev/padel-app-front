@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo, useState } from "react";
 import {
   GestureResponderEvent,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -108,7 +109,13 @@ const LabeledTextField = forwardRef<TextInput, Props>((props, ref) => {
         }}
       >
         {/* Reemplaza por tu ícono (ej. Eye/EyeOff) */}
-        <Text style={styles.toggleText}>{isHidden ? "👁️" : "🚫"}</Text>
+        <Text style={styles.toggleText}>
+          {isHidden ? (
+            <Image source={require("@/assets/images/vision.png")} />
+          ) : (
+            <Image source={require("@/assets/images/not-vision.png")} />
+          )}
+        </Text>
       </Pressable>
     ));
 
@@ -141,7 +148,7 @@ const LabeledTextField = forwardRef<TextInput, Props>((props, ref) => {
           accessibilityLabel={label}
           accessibilityHint={helperText}
           accessibilityState={{ disabled: !editable }}
-          secureTextEntry={password ? isHidden : undefined}
+          secureTextEntry={password ? isHidden : false}
           textContentType={resolvedTextContentType}
           autoComplete={resolvedAutoComplete as any}
           autoCorrect={resolvedAutoCorrect}

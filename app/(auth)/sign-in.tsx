@@ -1,50 +1,107 @@
 import { LabeledTextField } from "@/components/form/LabeledTextField";
 import ThemedButton from "@/components/themed-button";
+import { ThemedView } from "@/components/themed-view";
+import { validateEmail, validatePassword } from "@/lib/validation/auth";
 import { useAuth } from "@/providers/auth";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   ImageBackground,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const image = require("@/assets/images/login-background.png");
 
+type AuthFormErrors = {
+  email?: string;
+  password?: string;
+};
+
+type AuthFormValues = {
+  email: string;
+  password: string;
+};
+
 export default function LoginScreen() {
-  const { signIn, error, isSubmitting } = useAuth();
-  const [authData, setAuthData] = useState({
+  const { signIn, googleSignIn, error, isSubmitting } = useAuth();
+  const [authData, setAuthData] = useState<AuthFormValues>({
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<AuthFormErrors>({});
 
   const onSubmit = async () => {
-    try {
-      await signIn(authData.email, authData.password);
-    } catch (e: any) {
-      console.log(e);
+    const emailValidation = validateEmail(authData.email);
+    const passwordValidation = validatePassword(authData.password);
 
-      Alert.alert("Error", e?.data ?? "No se pudo iniciar sesión");
+    const nextErrors: AuthFormErrors = {};
+    if (emailValidation.error) {
+      nextErrors.email = emailValidation.error;
+    }
+    if (passwordValidation.error) {
+      nextErrors.password = passwordValidation.error;
+    }
+
+    if (nextErrors.email || nextErrors.password) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+
+    const sanitizedValues: AuthFormValues = {
+      email: emailValidation.value,
+      password: passwordValidation.value,
+    };
+
+    const hasSanitizedChanges =
+      sanitizedValues.email !== authData.email ||
+      sanitizedValues.password !== authData.password;
+
+    if (hasSanitizedChanges) {
+      setAuthData((prev) => ({ ...prev, ...sanitizedValues }));
+    }
+
+    try {
+      await signIn(sanitizedValues.email, sanitizedValues.password);
+    } catch (e: any) {
+      console.error(error);
     }
   };
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", gap: 15 }}>
-        <ImageBackground
+      <ThemedView style={{ flex: 1 }}>
+        <View
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: 300,
+            position: "relative",
+            height: 240,
           }}
-          source={image}
-          resizeMode="cover"
-        />
+        >
+          <View
+            style={{
+              position: "absolute",
+              bottom: 20,
+              right: 30,
+              width: 130,
+              height: 130,
+              borderRadius: 100,
+              backgroundColor: "white",
+              zIndex: 1,
+            }}
+          />
+          <ImageBackground
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            source={image}
+            resizeMode="stretch"
+          />
+        </View>
         <View style={styles.container}>
           <View
             style={{
@@ -61,22 +118,31 @@ export default function LoginScreen() {
             label="Email"
             value={authData.email}
             placeholder="ejemplo@correo.com"
-            onChangeText={(t) => setAuthData(() => ({ ...authData, email: t }))}
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            error={errors.email}
+            onChangeText={(text) => {
+              setAuthData((prev) => ({ ...prev, email: text }));
+              setErrors((prev) => ({ ...prev, email: undefined }));
+            }}
           />
 
           <LabeledTextField
-            label="Contraseña"
+            label="Contrasena"
             value={authData.password}
             placeholder="*********"
             password
-            onChangeText={(t) =>
-              setAuthData(() => ({ ...authData, password: t }))
-            }
+            error={errors.password}
+            onChangeText={(text) => {
+              setAuthData((prev) => ({ ...prev, password: text }));
+              setErrors((prev) => ({ ...prev, password: undefined }));
+            }}
           />
 
           <Pressable
             onPress={() => {
-              /* router.push("/(auth)/forgot-password") */
+              router.push("/(auth)/forgot-password");
             }}
           >
             <Text
@@ -86,10 +152,9 @@ export default function LoginScreen() {
                 color: "#FF6F3Cff",
               }}
             >
-              ¿Olvidaste tu contraseña?
+              Olvidaste tu contrasena?
             </Text>
           </Pressable>
-          {error && <Text style={{ color: "red" }}>{error}</Text>}
           <ThemedButton
             disabled={isSubmitting}
             isLoading={isSubmitting}
@@ -103,7 +168,18 @@ export default function LoginScreen() {
             <View style={styles.divider} />
           </View>
 
-          <Pressable style={styles.googleButton}>
+          <Pressable
+            onPress={googleSignIn}
+            style={({ pressed }) => [
+              styles.googleButton,
+              pressed && { backgroundColor: "#CBCBCB80" }, // color de fondo al presionar
+            ]}
+          >
+            <ImageBackground
+              source={require("@/assets/images/google-icon.png")}
+              resizeMode="contain"
+              style={{ width: 24, height: 24 }}
+            />
             <Text style={styles.googleText}>Ingresar con Google</Text>
           </Pressable>
 
@@ -119,13 +195,13 @@ export default function LoginScreen() {
               gap: 10,
             }}
           >
-            <Text style={{ color: "#9e9e9eff" }}>¿No tenes cuenta ?</Text>
-            <Pressable>
+            <Text style={{ color: "#9e9e9eff" }}>No tenes cuenta?</Text>
+            <Pressable onPress={() => router.push("/(auth)/sign-up")}>
               <Text style={styles.link}>Registrate</Text>
             </Pressable>
           </View>
         </View>
-      </SafeAreaView>
+      </ThemedView>
     </>
   );
 }
@@ -133,9 +209,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    marginTop: 80,
+    paddingHorizontal: 20,
     gap: 12,
   },
   title: { fontSize: 42, fontWeight: "500" },
@@ -152,7 +226,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 10,
   },
   divider: {
     width: "30%",
@@ -160,6 +234,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#E1E1E1",
   },
   googleButton: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
     height: 48,
     justifyContent: "center",
     alignItems: "center",
